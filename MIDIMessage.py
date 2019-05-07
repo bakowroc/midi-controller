@@ -7,10 +7,10 @@ import threading
 fs = 48000
 
 
-def get_wave(note_key, duration, transpose=60):
+def get_wave(note_key, duration, attack, transpose=60):
     frequency = 440 * np.power(2, (note_key - transpose) / 12)
-    return np.sin(2*np.pi*np.arange(fs*duration)*frequency/fs).astype(np.float32)
-
+    pure = 2 * np.sin(2*np.pi*np.arange(fs*duration)*frequency/fs).astype(np.float32)
+    return attack * pure
 
 class MIDIMessage(threading.Thread):
     def __init__(self, value, p):
@@ -18,7 +18,6 @@ class MIDIMessage(threading.Thread):
 
         self.note = value.getNoteNumber()
         self.velocity = value.getVelocity()
-        print(self.velocity)
         self.stream = p.open(format=pyaudio.paFloat32,
                              channels=1,
                              rate=fs,
@@ -27,7 +26,8 @@ class MIDIMessage(threading.Thread):
         self.is_stopped = False
 
     def run(self):
-        wave = get_wave(self.note, 13)
+        attack = self.velocity / (64 * 10)
+        wave = get_wave(self.note, 13, attack)
 
         while True:
             if self.is_stopped:
