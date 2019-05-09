@@ -2,7 +2,9 @@ import rtmidi
 import pyaudio
 
 from MIDIMessage import MIDIMessage
+from sounds.sounds import plot, clean
 
+EXAMINE = False
 p = pyaudio.PyAudio()
 active_sounds = {}
 
@@ -25,11 +27,15 @@ def print_message(value):
 
 
 if __name__ == "__main__":
-    MIDIDevice = rtmidi.RtMidiIn()
+    if EXAMINE:
+        print('Examine')
+        plot(clean(440))
+    else:
+        MIDIDevice = rtmidi.RtMidiIn()
 
-    MIDIDevice.openPort(1)
-    while True:
-        message = MIDIDevice.getMessage()
-        if message:
-            print_message(message)
+        MIDIDevice.openPort(1)
+        while True:
+            message = MIDIDevice.getMessage(100)
+            if message:
+                print_message(message)
 
